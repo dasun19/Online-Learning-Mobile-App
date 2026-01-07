@@ -23,13 +23,17 @@ const userSchema = new Schema({
         required: true,
         minLength: 8,
     },
-    
+
     role: {
         type: String,
         required: true,
         enum: ["student", "instructor"],
         default: "student"
     },
+    tokenVersion: {
+        type: Number,
+        default: 0
+    }
 },
     {
         timestamps: true

@@ -1,4 +1,17 @@
-import { User } from "../models/User";
+import { User } from "../models/User.js";
+import jwt from "jsonwebtoken";
+
+const generateToken = (user) => {
+    return jwt.sign(
+        {
+            id: user._id,
+            role: user.role,
+            v: user.tokenVersion,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+    );
+};
 
 const registerUser = async (req, res) => {
     try {
@@ -50,8 +63,11 @@ const loginUser = async (req, res) => {
         const isMatch = await user.comparePassword(password);
         if (!isMatch) return res.status(400).json({ message: "Invalid Credentials" });
 
+        const token = generateToken(user);
+
         res.status(200).json({
             message: "User logged successfully!",
+            token,
             user: {
                 id: user._id,
                 email: user.email,
@@ -72,6 +88,9 @@ const logoutUser = async (req, res) => {
         if (!user) {
             return res.status(400).json({ message: "User not found!" });
         }
+
+        user.tokenVersion += 1;
+        await user.save();
 
         res.status(200).json({
             message: "Logged out successfully!"
