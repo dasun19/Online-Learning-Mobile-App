@@ -43,7 +43,7 @@ export const studentOnly = (req, res, next) => {
     next();
 };
 
-const instructorOnly = (req, res, next) => {
+export const instructorOnly = (req, res, next) => {
     if (req.user.role !== "instructor") {
         return res.status(403).json({ message: "Access denied: Instructor only" })
     }
