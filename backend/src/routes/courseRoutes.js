@@ -4,11 +4,15 @@ import {
     getAllCourses,
     getCourseById,
     updateCourse,
-    deleteCourse
+    deleteCourse,
+    enrollCourse,
+    getEnrolledCourses,
+    getInstructorCourses
 } from "../controllers/courseController.js";
 import {
     verifyToken,
-    instructorOnly
+    instructorOnly,
+    studentOnly
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -17,9 +21,14 @@ const router = express.Router();
 router.get("/", getAllCourses);
 router.get("/:id", getCourseById);
 
+// Student only routes
+router.post("/:id/enroll", verifyToken, studentOnly, enrollCourse);
+router.get("/enrolled/list", verifyToken, studentOnly, getEnrolledCourses);
+
 // Instructor only routes
 router.post("/create", verifyToken, instructorOnly, courseCreate);
 router.put("/:id", verifyToken, instructorOnly, updateCourse);
 router.delete("/:id", verifyToken, instructorOnly, deleteCourse);
+router.get("/my-courses/list", verifyToken, instructorOnly, getInstructorCourses);
 
 export default router;

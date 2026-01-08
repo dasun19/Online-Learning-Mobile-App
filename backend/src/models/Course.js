@@ -19,10 +19,21 @@ const courseSchema = new Schema({
         minLength: 5,
         maxLength: 50,
     },
+    instructorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     content: [
         {
             title: String,
             body: String
+        }
+    ],
+    enrolledStudents: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
         }
     ]
 },

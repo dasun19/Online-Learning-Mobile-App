@@ -20,6 +20,7 @@ export const courseCreate = async (req, res) => {
             title,
             description,
             instructor: req.user.name, // Logged instructor 
+            instructorId: req.user._id,
             content: Array.isArray(content) ? content : [] // Optional content
         })
 
@@ -96,4 +97,58 @@ export const deleteCourse = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+// Student enroll to a course
+export const enrollCourse = async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+
+        if (!course) return res.status(404).json({ message: "Course not found!" });
+
+        if (course.enrolledStudents.includes(req.user._id)) {
+            return res.status(400).json({ message: "Already enrolled in this course!" });
+        }
+
+        course.enrolledStudents.push(req.user._id);
+        await course.save();
+
+        res.status(200).json({ message: "Enrolled successfully!" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// Get student enrolled courses list
+export const getEnrolledCourses = async (req, res) => {
+    try {
+        if (req.user.role !== "student") {
+            return res.status(403).json({ message: "Only students can access their courses!" });
+        }
+
+        const courses = await Course.find({ enrolledStudents: req.user._id });
+
+        res.status(200).json(courses);
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// Get instructors' courses
+export const getInstructorCourses = async (req, res) => {
+    try {
+        if (req.user.role !== "instructor") {
+            return res.status(403).json({ message: "Only instructors can access this!" });
+        }
+
+        const courses = await Course.find({ instructorId: req.user._id })
+            .populate("enrolledStudents", "name email");
+
+        res.status(200).json(courses);
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
+
 
