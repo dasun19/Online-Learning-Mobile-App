@@ -38,9 +38,25 @@ export const courseCreate = async (req, res) => {
 // Get all courses
 export const getAllCourses = async (req, res) => {
     try {
+
+        const userId = req.user._id.toString();
         const courses = await Course.find();
-        res.status(200).json(courses)
+
+        const coursesWithEnrollInfo = courses.map((course) => ({
+            _id: course._id,
+            title: course.title,
+            description: course.description,
+            enrolledCount: course.enrolledStudents?.length || 0,
+            instructor: course.instructor,
+            isEnrolled: course.enrolledStudents
+                ? course.enrolledStudents.map(id => id.toString()).includes(userId)
+                : false,
+            instructorId: course.instructorId,
+            
+        }));
+        res.status(200).json(coursesWithEnrollInfo)
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
@@ -63,7 +79,7 @@ export const getCourseById = async (req, res) => {
 // Update a course
 export const updateCourse = async (req, res) => {
     try {
-        const { title, description, instructor } = req.body;
+        const { title, description, content } = req.body;
 
         const course = await Course.findByIdAndUpdate(
             req.params.id,
@@ -72,7 +88,7 @@ export const updateCourse = async (req, res) => {
         )
 
         if (!course) {
-            return res.status(500).json({ message: "Course not found!" });
+            return res.status(404).json({ message: "Course not found!" });
         }
 
         res.status(200).json({

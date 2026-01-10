@@ -1,10 +1,11 @@
 
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
-import { Button, Text, TextInput, useTheme, RadioButton } from "react-native-paper";
+import { Button, Text, TextInput, useTheme, RadioButton, Snackbar } from "react-native-paper";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/AuthStack";
 import { useNavigation } from "@react-navigation/native";
+import API from "../../api/axios";
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, "Register">
 
@@ -15,6 +16,7 @@ export default function RegisterScreen() {
     const [password, setPassword] = useState<string>("");
     const [role, setRole] = useState<"student" | "instructor">("student");
     const [error, setError] = useState<string | null>("");
+    const [snackbarVisible, setSnackbarVisible] = useState<boolean>(false);
 
     const theme = useTheme();
     const navigation = useNavigation<RegisterScreenNavigationProp>();
@@ -29,11 +31,37 @@ export default function RegisterScreen() {
 
         if (password.length < 6) {
             setError("Passwords must be at least 6 characters long.")
+            return;
+        }
+        try {
+
+            setError(null);
+
+            const response = await API.post("/auth/register", {
+                name,
+                email,
+                password,
+                role,
+            });
+
+            console.log("Register success:", response.data);
+
+            // Navigate to login after success
+            setSnackbarVisible(true);
+
+            setTimeout(() => {
+                navigation.replace("Login");
+            }, 1500);
+
+        } catch (error: any) {
+            if (error.response) {
+                setError(error.response.data.message);
+            } else {
+                setError("Network error. Please try again.")
+            }
         }
 
-        setError(null);
-
-    }
+    };
 
     const handleSwitchMode = () => {
         navigation.replace("Login")
@@ -48,6 +76,7 @@ export default function RegisterScreen() {
                 <Text style={styles.title} variant="headlineMedium">
                     Create Account
                 </Text>
+
                 <TextInput style={styles.input}
                     label="Name"
                     autoCapitalize="none"
@@ -103,6 +132,18 @@ export default function RegisterScreen() {
                     Already have an account? Sign In
 
                 </Button>
+
+                <Snackbar
+                    visible={snackbarVisible}
+                    onDismiss={() => setSnackbarVisible(false)}
+                    duration={1500}
+                    style={{ backgroundColor: "#f5f5f5" }}
+                >
+                    <Text style={{ color: "#4CAF50" }}>
+                        Account created successfully!
+                    </Text>
+                </Snackbar>
+
             </View>
         </KeyboardAvoidingView>
     )

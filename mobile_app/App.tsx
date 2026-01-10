@@ -1,40 +1,66 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { PaperProvider } from "react-native-paper";
 import { enableScreens } from "react-native-screens";
+import { ActivityIndicator, View } from "react-native";
 import AuthStack from "./src/navigation/AuthStack";
+import StudentTabs from "./src/navigation/StudentTabs";
+import InstructorTabs from "./src/navigation/InstructorTabs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthProvider, AuthContext } from "./src/context/AuthContext";
 
 enableScreens();
 
-const App = () => {
+const AppNavigator = () => {
+  const { user, loading } = useContext(AuthContext);
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkFirstLaunch = async () => {
-      const value = await AsyncStorage.getItem("alreadyLaunched");
+    checkFirstLaunch();
+  }, []);
 
+  const checkFirstLaunch = async () => {
+    try {
+      const value = await AsyncStorage.getItem("alreadyLaunched");
       if (value === null) {
         await AsyncStorage.setItem("alreadyLaunched", "true");
         setIsFirstLaunch(true);
       } else {
         setIsFirstLaunch(false);
       }
-    };
-    checkFirstLaunch();
+    } catch (error) {
+      console.log("Error checking first launch:", error);
+      setIsFirstLaunch(false);
+    }
+  };
 
-  }, []);
-
-  if (isFirstLaunch === null) {
-    return null;
+  // Show loading while checking auth
+  if (loading || isFirstLaunch === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
+  // Show screen based on role
+  if (user) {
+    return user.role === "student" ? <StudentTabs /> : <InstructorTabs />;
+  }
+
+  // If not authenticated show auth flow
+  return <AuthStack isFirstLaunch={isFirstLaunch} />;
+};
+
+const App = () => {
   return (
-    <PaperProvider>
-      <NavigationContainer>
-        <AuthStack isFirstLaunch={isFirstLaunch} />
-      </NavigationContainer>
-    </PaperProvider>
+    <AuthProvider>
+      <PaperProvider>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </PaperProvider>
+    </AuthProvider>
   );
 };
 

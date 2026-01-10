@@ -17,11 +17,12 @@ import {
 
 const router = express.Router();
 
-// Public routes
-router.get("/", getAllCourses);
-router.get("/:id", getCourseById);
+
+
+
 
 // Student only routes
+router.get("/for-students", verifyToken, studentOnly, getAllCourses);
 router.post("/:id/enroll", verifyToken, studentOnly, enrollCourse);
 router.get("/enrolled/list", verifyToken, studentOnly, getEnrolledCourses);
 
@@ -30,5 +31,9 @@ router.post("/create", verifyToken, instructorOnly, courseCreate);
 router.put("/:id", verifyToken, instructorOnly, updateCourse);
 router.delete("/:id", verifyToken, instructorOnly, deleteCourse);
 router.get("/my-courses/list", verifyToken, instructorOnly, getInstructorCourses);
+
+// Public routes
+router.get("/", getAllCourses);
+router.get("/:id", getCourseById);
 
 export default router;

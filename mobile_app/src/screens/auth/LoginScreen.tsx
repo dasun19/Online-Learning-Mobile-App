@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
-import { Button, Text, TextInput, useTheme, RadioButton } from "react-native-paper";
+import { Button, Text, TextInput, useTheme, Snackbar } from "react-native-paper";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/AuthStack";
 import { useNavigation } from "@react-navigation/native";
+import API from "../../api/axios";
+import { AuthContext } from "../../context/AuthContext";
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, "Login">
 
@@ -11,9 +13,11 @@ export default function LoginScreen() {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>("");
+    const [snackbarVisible, setSnackbarVisible] = useState<boolean>(false);
 
     const theme = useTheme();
     const navigation = useNavigation<LoginScreenNavigationProp>();
+    const { login } = useContext(AuthContext);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -23,9 +27,38 @@ export default function LoginScreen() {
 
         if (password.length < 6) {
             setError("Passwords must be at least 6 characters long.")
+            return;
         }
+        try {
+            setError(null);
 
-        setError(null);
+            const response = await API.post("/auth/login", {
+                email,
+                password,
+            });
+
+            const { user, token } = response.data;
+
+            // Save globally
+            await login(user, token);
+
+            console.log("Login successfull!", response.data);
+
+            
+            setSnackbarVisible(true)
+
+            // Navigate to homescreens
+            setTimeout(() => {
+                navigation.replace(user.role === "student" ? "StudentTabs" : "InstructorTabs")
+            }, 1500);
+
+        } catch (error: any) {
+            if (error.response) {
+                setError(error.response.data.message);
+            } else {
+                setError("Network error. Please try again.")
+            }
+        }
     };
 
     const handleSwitchMode = () => {
@@ -41,6 +74,7 @@ export default function LoginScreen() {
                 <Text style={styles.title} variant="headlineMedium">
                     Welcome Back
                 </Text>
+
                 <TextInput style={styles.input}
                     label="Email"
                     autoCapitalize="none"
@@ -73,6 +107,18 @@ export default function LoginScreen() {
                     style={styles.switchMode}>
                     Don't have an account? Sign Up
                 </Button>
+
+                <Snackbar
+                    visible={snackbarVisible}
+                    onDismiss={() => setSnackbarVisible(false)}
+                    duration={1500}
+                    style={{ backgroundColor: "#f5f5f5" }}
+                >
+                    <Text style={{ color: "#4CAF50" }}>
+                        Login successful!
+                    </Text>
+                </Snackbar>
+
             </View>
         </KeyboardAvoidingView>
     )

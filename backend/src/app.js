@@ -1,8 +1,15 @@
 import express from "express";
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import cors from "cors";
 
 const app = express();
+
+
+app.use(cors({
+    origin: "*", // For testing - restrict this in production
+    credentials: true
+}));
 
 app.use(express.json());
 
