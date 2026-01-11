@@ -74,6 +74,15 @@ const CourseDetailsScreen: React.FC<Props> = ({ route }) => {
         setShowStudents(!showStudents);
     };
 
+    const capitalizeWords = (str: string) => {
+        if (!str) return '';
+        return str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
     const formatDate = (dateString?: string) => {
         if (!dateString) return "N/A";
         const date = new Date(dateString);
@@ -118,7 +127,7 @@ const CourseDetailsScreen: React.FC<Props> = ({ route }) => {
             </Text>
 
             <Text variant="titleSmall" style={styles.instructor}>
-                Instructor: {course.instructor}
+                Instructor: {capitalizeWords(course.instructor)}
             </Text>
 
             <Text variant="bodySmall" style={styles.enrollment}>

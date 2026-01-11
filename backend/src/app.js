@@ -1,6 +1,7 @@
 import express from "express";
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import chatgptRoutes from "./routes/chatgptAPIRoutes.js";
 import cors from "cors";
 
 const app = express();
@@ -16,6 +17,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 
 app.use("/api/courses", courseRoutes);
+
+app.use("/api/chat", chatgptRoutes);
 
 app.get("/", (req, res) => {
     res.json({

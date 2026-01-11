@@ -54,6 +54,7 @@ const AppNavigator = () => {
 
 const App = () => {
   return (
+    
     <AuthProvider>
       <PaperProvider>
         <NavigationContainer>

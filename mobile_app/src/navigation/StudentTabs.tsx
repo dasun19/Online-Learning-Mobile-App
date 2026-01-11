@@ -6,10 +6,12 @@ import EnrolledCoursesScreen from '../screens/student/EnrolledCoursesScreen';
 import CourseDetailsScreen from '../screens/student/CourseDetailsScreen';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import DrawerNavigator from "../navigation/DrawerNavigator";
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import ProfileScreen from '../screens/common/ProfileScreen';
 import { SettingsScreen } from '../screens/common/SettingsScreen';
 import { HelpSupportScreen } from '../screens/common/HelpSupportScreen';
+import CourseSuggestionsScreen from "../screens/student/CourseSuggestionsScreen";
+import AIButton from '../components/AIButton';
 
 export type StudentTabParamList = {
   TabNavigator: undefined;
@@ -20,6 +22,7 @@ export type StudentTabParamList = {
   Profile: undefined;
   Settings: undefined;
   HelpSupport: undefined;
+  CourseSuggestions: undefined;
 };
 
 type TabsParamList = {
@@ -106,62 +109,76 @@ const TabNavigator = () => {
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       />
+      <AIButton />
     </>
   );
 };
 
 const StudentTabs = () => {
   return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="TabNavigator"
-        component={TabNavigator}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="CourseDetails"
-        component={CourseDetailsScreen}
-        options={({ route }) => ({
-          title: route.params.courseTitle,
-          headerShown: true,
-          headerTintColor: '#fff',
-          headerStyle: { backgroundColor: '#7c3aed' },
-          headerTitleStyle: {
-            fontWeight: '600',
-          },
-        })}
-      />
-      <Stack.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          headerShown: true,
-          title: 'Profile',
-          headerStyle: { backgroundColor: '#7c3aed' },
-          headerTintColor: '#fff',
-        }}
-      />
-      <Stack.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          headerShown: true,
-          title: 'Settings',
-          headerStyle: { backgroundColor: '#7c3aed' },
-          headerTintColor: '#fff',
-        }}
-      />
-      <Stack.Screen
-        name="HelpSupport"
-        component={HelpSupportScreen}
-        options={{
-          headerShown: true,
-          title: 'Help & Support',
-          headerStyle: { backgroundColor: '#7c3aed' },
-          headerTintColor: '#fff',
-        }}
-      />
-    </Stack.Navigator>
+    <>
+      <StatusBar backgroundColor="#7c3aed" barStyle="light-content" />
+      <Stack.Navigator>
+        <Stack.Screen
+          name="TabNavigator"
+          component={TabNavigator}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CourseDetails"
+          component={CourseDetailsScreen}
+          options={({ route }) => ({
+            title: route.params.courseTitle,
+            headerShown: true,
+            headerTintColor: '#fff',
+            headerStyle: { backgroundColor: '#7c3aed' },
+            headerTitleStyle: {
+              fontWeight: '600',
+            },
+          })}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            headerShown: true,
+            title: 'Profile',
+            headerStyle: { backgroundColor: '#7c3aed' },
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            headerShown: true,
+            title: 'Settings',
+            headerStyle: { backgroundColor: '#7c3aed' },
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="HelpSupport"
+          component={HelpSupportScreen}
+          options={{
+            headerShown: true,
+            title: 'Help & Support',
+            headerStyle: { backgroundColor: '#7c3aed' },
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="CourseSuggestions"
+          component={CourseSuggestionsScreen}
+          options={{
+            headerShown: true,
+            title: 'Course Recommendations',
+            headerStyle: { backgroundColor: '#7c3aed' },
+            headerTintColor: '#fff',
+          }}
+        />
+      </Stack.Navigator>
+    </>
   );
 };
 
@@ -176,8 +193,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#7c3aed',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
+    elevation: 10,
+    shadowColor: '#060606',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,

@@ -61,6 +61,16 @@ const EnrolledCoursesScreen: React.FC = () => {
         }
     };
 
+    const capitalizeWords = (str: string) => {
+        if (!str) return '';
+        return str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
+
     const renderItem = ({ item }: { item: Course }) => {
         return (
             <Card style={styles.card} elevation={1}>
@@ -70,7 +80,7 @@ const EnrolledCoursesScreen: React.FC = () => {
                     </Text>
 
                     <Text variant="bodyMedium" style={styles.instructor}>
-                        {item.instructor}
+                        {capitalizeWords(item.instructor)}
                     </Text>
 
                     <Text variant="bodySmall" style={styles.enrollment}>
@@ -112,9 +122,11 @@ const EnrolledCoursesScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            <Text variant="headlineMedium" style={styles.header}>
-                My Enrolled Courses
-            </Text>
+            <View style={styles.topPage}>
+                <Text variant="headlineMedium" style={styles.header}>
+                    My Enrolled Courses
+                </Text>
+            </View>
 
             <FlatList
                 data={courses}
@@ -144,11 +156,16 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
+    topPage: {
+        backgroundColor: '#7c3aed',
+        marginBottom: 10
+    },
     header: {
         marginBottom: 20,
         marginHorizontal: 16,
         marginTop: 16,
         fontWeight: '600',
+        color: "#ffff"
     },
     listContent: {
         paddingHorizontal: 16,

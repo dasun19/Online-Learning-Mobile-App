@@ -101,6 +101,16 @@ const CourseDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         );
     }
 
+    const capitalizeWords = (str: string) => {
+        if (!str) return '';
+        return str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
+
     return (
         <View style={styles.wrapper}>
             <TouchableOpacity
@@ -122,7 +132,7 @@ const CourseDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                     {course.title}
                 </Text>
                 <Text variant="titleSmall" style={styles.instructor}>
-                    Instructor: {course.instructor}
+                    Instructor: {capitalizeWords(course.instructor)}
                 </Text>
 
                 {course.content.map((item, index) => (

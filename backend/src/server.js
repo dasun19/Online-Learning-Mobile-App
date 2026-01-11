@@ -1,8 +1,11 @@
 import dotenv from "dotenv";
+dotenv.config();
+
 import connectDB from "../src/config/db.js";
 import app from "./app.js";
 
-dotenv.config({ path: "./.env" });
+console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY?.length);
 
 const startServer = async () => {
     try {

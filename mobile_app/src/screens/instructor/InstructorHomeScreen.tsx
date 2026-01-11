@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, FlatList, StyleSheet, Alert, RefreshControl } from 'react-native';
+import { View, FlatList, StyleSheet, Alert, RefreshControl, StatusBar } from 'react-native';
 import { Button, Text, Card, useTheme, IconButton } from "react-native-paper";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
@@ -88,6 +88,7 @@ const InstructorHomeScreen: React.FC = () => {
         );
     };
 
+
     const renderItem = ({ item }: { item: Course }) => {
         return (
             <Card style={styles.card} elevation={1}>
@@ -155,9 +156,12 @@ const InstructorHomeScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            <Text variant="headlineMedium" style={styles.header}>
-                My Courses
-            </Text>
+            <StatusBar backgroundColor="#7c3aed" barStyle="light-content" />
+            <View style={styles.topPage}>
+                <Text variant="headlineMedium" style={styles.header}>
+                    Teach Now
+                </Text>
+            </View>
 
             <FlatList
                 data={courses}
@@ -195,11 +199,17 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
+    topPage: {
+        backgroundColor: '#7c3aed',
+        marginBottom: 10
+    },
     header: {
         marginBottom: 20,
         marginHorizontal: 16,
         marginTop: 16,
         fontWeight: '600',
+        color: "#ffff"
+
     },
     listContent: {
         paddingHorizontal: 16,

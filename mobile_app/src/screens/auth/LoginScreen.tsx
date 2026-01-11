@@ -13,49 +13,62 @@ export default function LoginScreen({ navigation }: Props) {
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>("");
     const [snackbarVisible, setSnackbarVisible] = useState<boolean>(false);
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const theme = useTheme();
     const { login } = useContext(AuthContext);
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            setError("Please fill in all fields")
+        setError("");
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.trim()) {
+            setError("Email is required");
+            return;
+        }
+        if (!emailRegex.test(email.trim())) {
+            setError("Please enter a valid email");
             return;
         }
 
-        if (password.length < 6) {
-            setError("Passwords must be at least 6 characters long.")
+        if (!password) {
+            setError("Password is required");
             return;
         }
+        if (password.length < 6) {
+            setError("Password must be at least 6 characters");
+            return;
+        }
+
         try {
+            setLoading(true);
             setError(null);
 
             const response = await API.post("/auth/login", {
-                email,
+                email: email.trim().toLowerCase(),
                 password,
             });
 
             const { user, token } = response.data;
-
-            // Save globally
             await login(user, token);
 
-            console.log("Login successfull!", response.data);
-
-            setSnackbarVisible(true)
-
+            console.log("Login successful!", response.data);
+            setSnackbarVisible(true);
 
         } catch (error: any) {
             if (error.response) {
-                setError(error.response.data.message);
+                setError(error.response.data.message || "Invalid credentials");
             } else {
-                setError("Network error. Please try again.")
+                setError("Network error. Please try again.");
             }
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleSwitchMode = () => {
-        navigation.replace("Register")
+        navigation.replace("Register");
     };
 
     return (
@@ -67,29 +80,47 @@ export default function LoginScreen({ navigation }: Props) {
                     Welcome Back
                 </Text>
 
-                <TextInput style={styles.input}
+                <TextInput
+                    style={styles.input}
                     label="Email"
                     autoCapitalize="none"
                     keyboardType="email-address"
                     placeholder="example@gmail.com"
                     mode="outlined"
-                    onChangeText={setEmail}
+                    value={email}
+                    onChangeText={(text) => {
+                        setEmail(text);
+                        setError("");
+                    }}
                 />
 
-                <TextInput style={styles.input}
+                <TextInput
+                    style={styles.input}
                     label="Password"
                     autoCapitalize="none"
                     mode="outlined"
-                    secureTextEntry
-                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={(text) => {
+                        setPassword(text);
+                        setError("");
+                    }}
+                    right={
+                        <TextInput.Icon
+                            icon={showPassword ? "eye-off" : "eye"}
+                            onPress={() => setShowPassword(!showPassword)}
+                        />
+                    }
                 />
 
-                {error && <Text style={{ color: theme.colors.error }}> {error} </Text>}
+                {error && <Text style={{ color: theme.colors.error, marginTop: 8 }}>{error}</Text>}
 
                 <Button
                     mode="contained"
                     style={styles.button}
-                    onPress={handleLogin}>
+                    onPress={handleLogin}
+                    loading={loading}
+                    disabled={loading}>
                     Sign In
                 </Button>
 
@@ -104,16 +135,14 @@ export default function LoginScreen({ navigation }: Props) {
                     visible={snackbarVisible}
                     onDismiss={() => setSnackbarVisible(false)}
                     duration={1500}
-                    style={{ backgroundColor: "#f5f5f5" }}
-                >
-                    <Text style={{ color: "#4CAF50" }}>
+                    style={{ backgroundColor: "#4CAF50" }}>
+                    <Text style={{ color: "#fff" }}>
                         Login successful!
                     </Text>
                 </Snackbar>
-
             </View>
         </KeyboardAvoidingView>
-    )
+    );
 }
 
 const styles = StyleSheet.create({

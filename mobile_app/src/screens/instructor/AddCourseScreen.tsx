@@ -23,7 +23,7 @@ const AddCourseScreen: React.FC<Props> = ({ navigation }) => {
   const [content, setContent] = useState<ContentItem[]>([{ title: "", body: "" }]);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
-  
+
   const { user } = useContext(AuthContext);
   const theme = useTheme();
 
@@ -91,104 +91,109 @@ const AddCourseScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text variant="headlineMedium" style={styles.header}>
-        Create New Course
-      </Text>
+    <>
+      <View style={styles.topPage}>
+        <Text variant="headlineMedium" style={styles.header}>
+          Create New Course
+        </Text>
+      </View>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
 
-      <TextInput
-        label="Course Title"
-        mode="outlined"
-        style={styles.input}
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Enter course title"
-      />
 
-      <TextInput
-        label="Description"
-        mode="outlined"
-        style={styles.input}
-        value={description}
-        onChangeText={setDescription}
-        placeholder="Enter course description"
-        multiline
-        numberOfLines={4}
-      />
+        <TextInput
+          label="Course Title"
+          mode="outlined"
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Enter course title"
+        />
 
-      <View style={styles.contentSection}>
-        <View style={styles.contentHeader}>
-          <Text variant="titleMedium" style={styles.contentTitle}>
-            Course Content
-          </Text>
-          <Button
-            mode="outlined"
-            icon="plus"
-            onPress={addContentItem}
-            compact
-          >
-            Add Section
-          </Button>
+        <TextInput
+          label="Description"
+          mode="outlined"
+          style={styles.input}
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Enter course description"
+          multiline
+          numberOfLines={4}
+        />
+
+        <View style={styles.contentSection}>
+          <View style={styles.contentHeader}>
+            <Text variant="titleMedium" style={styles.contentTitle}>
+              Course Content
+            </Text>
+            <Button
+              mode="outlined"
+              icon="plus"
+              onPress={addContentItem}
+              compact
+            >
+              Add Section
+            </Button>
+          </View>
+
+          {content.map((item, index) => (
+            <View key={index} style={styles.contentItem}>
+              <View style={styles.contentItemHeader}>
+                <Text variant="labelLarge">Section {index + 1}</Text>
+                {content.length > 1 && (
+                  <IconButton
+                    icon="delete"
+                    iconColor="#e74c3c"
+                    size={20}
+                    onPress={() => removeContentItem(index)}
+                  />
+                )}
+              </View>
+
+              <TextInput
+                label="Section Title"
+                mode="outlined"
+                style={styles.contentInput}
+                value={item.title}
+                onChangeText={(value) => updateContentItem(index, 'title', value)}
+                placeholder="e.g., Introduction, Chapter 1"
+              />
+
+              <TextInput
+                label="Section Body"
+                mode="outlined"
+                style={styles.contentInput}
+                value={item.body}
+                onChangeText={(value) => updateContentItem(index, 'body', value)}
+                placeholder="Enter section content"
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+          ))}
         </View>
 
-        {content.map((item, index) => (
-          <View key={index} style={styles.contentItem}>
-            <View style={styles.contentItemHeader}>
-              <Text variant="labelLarge">Section {index + 1}</Text>
-              {content.length > 1 && (
-                <IconButton
-                  icon="delete"
-                  iconColor="#e74c3c"
-                  size={20}
-                  onPress={() => removeContentItem(index)}
-                />
-              )}
-            </View>
+        <Button
+          mode="contained"
+          disabled={!isFormValid()}
+          onPress={handleSubmit}
+          style={styles.button}
+        >
+          Create Course
+        </Button>
 
-            <TextInput
-              label="Section Title"
-              mode="outlined"
-              style={styles.contentInput}
-              value={item.title}
-              onChangeText={(value) => updateContentItem(index, 'title', value)}
-              placeholder="e.g., Introduction, Chapter 1"
-            />
+        {error ? (
+          <Text style={[styles.message, { color: theme.colors.error }]}>
+            {error}
+          </Text>
+        ) : null}
 
-            <TextInput
-              label="Section Body"
-              mode="outlined"
-              style={styles.contentInput}
-              value={item.body}
-              onChangeText={(value) => updateContentItem(index, 'body', value)}
-              placeholder="Enter section content"
-              multiline
-              numberOfLines={4}
-            />
-          </View>
-        ))}
-      </View>
-
-      <Button
-        mode="contained"
-        disabled={!isFormValid()}
-        onPress={handleSubmit}
-        style={styles.button}
-      >
-        Create Course
-      </Button>
-
-      {error ? (
-        <Text style={[styles.message, { color: theme.colors.error }]}>
-          {error}
-        </Text>
-      ) : null}
-
-      {success ? (
-        <Text style={[styles.message, { color: '#10b981' }]}>
-          {success}
-        </Text>
-      ) : null}
-    </ScrollView>
+        {success ? (
+          <Text style={[styles.message, { color: '#10b981' }]}>
+            {success}
+          </Text>
+        ) : null}
+      </ScrollView>
+    </>
   );
 };
 
@@ -201,10 +206,17 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32,
   },
+  topPage: {
+    backgroundColor: '#7c3aed',
+    marginBottom: 10
+  },
   header: {
-    marginBottom: 24,
-    marginTop: 8,
+    marginBottom: 20,
+    marginHorizontal: 16,
+    marginTop: 16,
     fontWeight: '600',
+    color: "#ffff"
+
   },
   input: {
     marginBottom: 16,
