@@ -54,19 +54,28 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
     };
 
     const login = async (userData: User, authToken: string) => {
-        setUser(userData);
-        setToken(authToken);
-        API.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
-        await AsyncStorage.setItem("user", JSON.stringify(userData));
-        await AsyncStorage.setItem("token", authToken);
+        try {
+            setUser(userData);
+            setToken(authToken);
+            API.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+            await AsyncStorage.setItem("user", JSON.stringify(userData));
+            await AsyncStorage.setItem("token", authToken);
+        } catch (error) {
+            console.error("Login storage error:", error);
+            throw error;
+        }
     };
 
     const logout = async () => {
-        setUser(null);
-        setToken(null);
-        API.defaults.headers.common["Authorization"] = "";
-        await AsyncStorage.removeItem("user");
-        await AsyncStorage.removeItem("token");
+        try {
+            setUser(null);
+            setToken(null);
+            API.defaults.headers.common["Authorization"] = "";
+            await AsyncStorage.removeItem("user");
+            await AsyncStorage.removeItem("token");
+        } catch (error) {
+            console.error("Logout error:", error)
+        }
     };
 
     return (

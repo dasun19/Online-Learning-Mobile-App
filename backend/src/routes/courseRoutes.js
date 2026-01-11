@@ -7,7 +7,9 @@ import {
     deleteCourse,
     enrollCourse,
     getEnrolledCourses,
-    getInstructorCourses
+    getInstructorCourses,
+    getCourseStudents,
+    unenrollCourse
 } from "../controllers/courseController.js";
 import {
     verifyToken,
@@ -17,16 +19,14 @@ import {
 
 const router = express.Router();
 
-
-
-
-
 // Student only routes
 router.get("/for-students", verifyToken, studentOnly, getAllCourses);
 router.post("/:id/enroll", verifyToken, studentOnly, enrollCourse);
+router.post("/unenroll/:id", verifyToken, studentOnly, unenrollCourse);
 router.get("/enrolled/list", verifyToken, studentOnly, getEnrolledCourses);
 
 // Instructor only routes
+router.get("/:id/students", verifyToken, instructorOnly, getCourseStudents);
 router.post("/create", verifyToken, instructorOnly, courseCreate);
 router.put("/:id", verifyToken, instructorOnly, updateCourse);
 router.delete("/:id", verifyToken, instructorOnly, deleteCourse);

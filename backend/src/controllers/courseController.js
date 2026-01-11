@@ -52,7 +52,7 @@ export const getAllCourses = async (req, res) => {
                 ? course.enrolledStudents.map(id => id.toString()).includes(userId)
                 : false,
             instructorId: course.instructorId,
-            
+
         }));
         res.status(200).json(coursesWithEnrollInfo)
     } catch (error) {
@@ -156,15 +156,116 @@ export const getInstructorCourses = async (req, res) => {
             return res.status(403).json({ message: "Only instructors can access this!" });
         }
 
-        const courses = await Course.find({ instructorId: req.user._id })
-            .populate("enrolledStudents", "name email");
+        const courses = await Course.find({ instructorId: req.user._id });
+        const coursesWithCount = courses.map(course => ({
+            _id: course._id,
+            title: course.title,
+            description: course.description,
+            content: course.content,
+            instructor: course.instructor,
+            instructorId: course.instructorId,
+            enrolledCount: course.enrolledStudents?.length || 0,
+            enrolledStudents: course.enrolledStudents
+        }));
 
-        res.status(200).json(courses);
+        res.status(200).json(coursesWithCount);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
+// Get enrolled students for a specific course
+export const getCourseStudents = async (req, res) => {
+    try {
+        console.log("Getting students for course:", req.params.id);
+        console.log("User:", req.user._id, "Role:", req.user.role);
 
+        const course = await Course.findById(req.params.id)
+            .populate("enrolledStudents", "name email createdAt");
 
+        if (!course) {
+            console.log("Course not found");
+            return res.status(404).json({ message: "Course not found!" });
+        }
 
+        console.log("Course found:", course.title);
+        console.log("Enrolled students count:", course.enrolledStudents.length);
+
+        // Check if the instructor owns this course
+        if (req.user.role === "instructor" && course.instructorId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: "Not authorized to view these students!" });
+        }
+
+        // Format the response
+        const students = course.enrolledStudents.map(student => ({
+            _id: student._id,
+            name: student.name,
+            email: student.email,
+            enrolledAt: student.createdAt
+        }));
+
+        console.log("Returning students:", students);
+
+        res.status(200).json(students);
+    } catch (error) {
+        console.log("Error in getCourseStudents:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// Unenroll from a course
+export const unenrollCourse = async (req, res) => {
+    try {
+        const courseId = req.params.id; 
+        console.log("Unenroll - Course ID:", courseId);
+        console.log("Unenroll - User ID:", req.user._id);
+        console.log("Unenroll - User Role:", req.user.role);
+
+        // Check if user is a student
+        if (req.user.role !== "student") {
+            return res.status(403).json({ 
+                message: "Only students can unenroll from courses!" 
+            });
+        }
+
+        // Find the course
+        const course = await Course.findById(courseId);
+        
+        if (!course) {
+            console.log("Course not found with ID:", courseId);
+            return res.status(404).json({ message: "Course not found" });
+        }
+
+        console.log("Course found:", course.title);
+
+        // Check if student is enrolled
+        const isEnrolled = course.enrolledStudents.some(
+            studentId => studentId.toString() === req.user._id.toString()
+        );
+
+        if (!isEnrolled) {
+            return res.status(400).json({ 
+                message: "You are not enrolled in this course" 
+            });
+        }
+
+        // Remove student from course's enrolledStudents array
+        course.enrolledStudents = course.enrolledStudents.filter(
+            studentId => studentId.toString() !== req.user._id.toString()
+        );
+        
+        await course.save();
+
+        res.status(200).json({ 
+            message: "Successfully unenrolled from course",
+            courseId: courseId
+        });
+
+    } catch (error) {
+        console.log("Error in unenrollCourse:", error);
+        res.status(500).json({ 
+            message: "Server error", 
+            error: error.message 
+        });
+    }
+};

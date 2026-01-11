@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, FlatList, LayoutAnimation, Platform, UIManager, StyleSheet } from 'react-native';
+import { View, FlatList, LayoutAnimation, Platform, UIManager, StyleSheet, RefreshControl } from 'react-native';
 import { Button, Text, Card, useTheme } from "react-native-paper";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 import { AuthStackParamList } from "../../navigation/AuthStack";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -29,6 +29,7 @@ const StudentHomeScreen: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [error, setError] = useState<string>("");
   const [expandedCourseIds, setExpandedCourseIds] = useState<string[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   if (Platform.OS === "android") {
     UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -36,6 +37,14 @@ const StudentHomeScreen: React.FC = () => {
 
   const { user, token, loading } = useContext(AuthContext);
   const theme = useTheme();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!loading && token) {
+        fetchCourses();
+      }
+    }, [loading, token])
+  );
 
   useEffect(() => {
     if (!loading && token) {
@@ -64,6 +73,11 @@ const StudentHomeScreen: React.FC = () => {
         setError("");
       }, 3000);
     }
+  };
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCourses();
+    setRefreshing(false);
   };
 
   const toggleExpand = (id: string) => {
@@ -120,7 +134,7 @@ const StudentHomeScreen: React.FC = () => {
                 <Button
                   mode="contained"
                   onPress={() =>
-                    navigation.navigate("CourseCard", {
+                    navigation.navigate("CourseDetails", {
                       courseId: item._id,
                       courseTitle: item.title,
                     })
@@ -148,6 +162,14 @@ const StudentHomeScreen: React.FC = () => {
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]} // Android
+            tintColor={theme.colors.primary} // iOS
+          />
+        }
       />
 
       {error && (

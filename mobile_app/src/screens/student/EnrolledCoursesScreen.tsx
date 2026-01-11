@@ -7,7 +7,7 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StudentTabParamList } from "../../navigation/StudentTabs";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 type EnrolledCoursesNavigationProp = CompositeNavigationProp<
     BottomTabNavigationProp<{ MyCourses: undefined }>,
@@ -30,6 +30,14 @@ const EnrolledCoursesScreen: React.FC = () => {
 
     const { user, token, loading } = useContext(AuthContext);
     const theme = useTheme();
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (!loading && token) {
+                fetchEnrolledCourses();
+            }
+        }, [loading, token])
+    );
 
     useEffect(() => {
         if (!loading && token) {
@@ -77,7 +85,7 @@ const EnrolledCoursesScreen: React.FC = () => {
                         <Button
                             mode="contained"
                             onPress={() =>
-                                navigation.navigate("CourseCard", {
+                                navigation.navigate("CourseDetails", {
                                     courseId: item._id,
                                     courseTitle: item.title,
                                 })

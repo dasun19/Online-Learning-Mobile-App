@@ -1,22 +1,20 @@
 import { useState, useContext } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { Button, Text, TextInput, useTheme, Snackbar } from "react-native-paper";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/AuthStack";
-import { useNavigation } from "@react-navigation/native";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, "Login">
+type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }: Props) {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>("");
     const [snackbarVisible, setSnackbarVisible] = useState<boolean>(false);
 
     const theme = useTheme();
-    const navigation = useNavigation<LoginScreenNavigationProp>();
     const { login } = useContext(AuthContext);
 
     const handleLogin = async () => {
@@ -44,13 +42,8 @@ export default function LoginScreen() {
 
             console.log("Login successfull!", response.data);
 
-            
             setSnackbarVisible(true)
 
-            // Navigate to homescreens
-            setTimeout(() => {
-                navigation.replace(user.role === "student" ? "StudentTabs" : "InstructorTabs")
-            }, 1500);
 
         } catch (error: any) {
             if (error.response) {
@@ -64,7 +57,6 @@ export default function LoginScreen() {
     const handleSwitchMode = () => {
         navigation.replace("Register")
     };
-
 
     return (
         <KeyboardAvoidingView
@@ -122,8 +114,7 @@ export default function LoginScreen() {
             </View>
         </KeyboardAvoidingView>
     )
-
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -138,20 +129,14 @@ const styles = StyleSheet.create({
     title: {
         textAlign: "center",
         marginBottom: 24
-
     },
     input: {
         marginBottom: 16
-
     },
     button: {
         marginTop: 8
-
     },
     switchMode: {
         marginTop: 16
-
     },
-
-
-})
+});

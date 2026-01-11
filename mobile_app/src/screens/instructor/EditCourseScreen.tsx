@@ -1,31 +1,31 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, TextInput, Button, useTheme, IconButton } from 'react-native-paper';
+import { Text, TextInput, Button, useTheme, ActivityIndicator, IconButton } from 'react-native-paper';
 import API from "../../api/axios";
-import { AuthContext } from "../../context/AuthContext";
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { InstructorTabParamList } from "../../navigation/InstructorTabs";
 
-type TabsParamList = {
-  MyCourses: undefined;
-  AddCourse: undefined;
-};
-
-type Props = BottomTabScreenProps<TabsParamList, 'AddCourse'>;
+type Props = NativeStackScreenProps<InstructorTabParamList, 'EditCourse'>;
 
 type ContentItem = {
   title: string;
   body: string;
 };
 
-const AddCourseScreen: React.FC<Props> = ({ navigation }) => {
+const EditCourseScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { courseId } = route.params;
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [content, setContent] = useState<ContentItem[]>([{ title: "", body: "" }]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   
-  const { user } = useContext(AuthContext);
   const theme = useTheme();
+
+  useEffect(() => {
+    fetchCourse();
+  }, []);
 
   useEffect(() => {
     if (error) {
@@ -38,11 +38,29 @@ const AddCourseScreen: React.FC<Props> = ({ navigation }) => {
     if (success) {
       const timer = setTimeout(() => {
         setSuccess("");
-        navigation.navigate('MyCourses');
+        navigation.goBack();
       }, 2000);
       return () => clearTimeout(timer);
     }
   }, [success, navigation]);
+
+  const fetchCourse = async () => {
+    try {
+      const res = await API.get(`/courses/${courseId}`);
+      setTitle(res.data.title);
+      setDescription(res.data.description);
+      
+      // Set content if it exists, otherwise use default empty item
+      if (res.data.content && res.data.content.length > 0) {
+        setContent(res.data.content);
+      }
+    } catch (error) {
+      console.log(error);
+      setError("Failed to load course data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addContentItem = () => {
     setContent([...content, { title: "", body: "" }]);
@@ -61,20 +79,15 @@ const AddCourseScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleSubmit = async () => {
     try {
-      if (!user) return;
-
       const validContent = content.filter(item => item.title.trim() && item.body.trim());
 
-      await API.post("/courses/create", {
+      await API.put(`/courses/${courseId}`, {
         title,
         description,
         content: validContent,
       });
 
-      setSuccess("Course created successfully!");
-      setTitle("");
-      setDescription("");
-      setContent([{ title: "", body: "" }]);
+      setSuccess("Course updated successfully!");
     } catch (error: any) {
       console.log(error.response?.data?.message);
       if (error.response) {
@@ -90,10 +103,18 @@ const AddCourseScreen: React.FC<Props> = ({ navigation }) => {
     return title.trim() && description.trim() && hasValidContent;
   };
 
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text variant="headlineMedium" style={styles.header}>
-        Create New Course
+        Edit Course
       </Text>
 
       <TextInput
@@ -174,7 +195,7 @@ const AddCourseScreen: React.FC<Props> = ({ navigation }) => {
         onPress={handleSubmit}
         style={styles.button}
       >
-        Create Course
+        Update Course
       </Button>
 
       {error ? (
@@ -196,6 +217,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     padding: 16,
@@ -248,4 +274,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddCourseScreen;
+export default EditCourseScreen;
