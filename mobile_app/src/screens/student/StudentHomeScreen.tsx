@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, FlatList, LayoutAnimation, Platform, UIManager, StyleSheet, RefreshControl } from 'react-native';
+import { View, FlatList, LayoutAnimation, Platform, UIManager, Alert, StyleSheet, RefreshControl } from 'react-native';
 import { Button, Text, Card, useTheme } from "react-native-paper";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
@@ -57,11 +57,22 @@ const StudentHomeScreen: React.FC = () => {
     setCourses(res.data);
   };
 
-  const handleEnroll = async (courseId: string) => {
+  const handleEnroll = async (courseId: string, title: string) => {
     try {
       const res = await API.post(`/courses/${courseId}/enroll`);
       console.log("Enrolled successfully", res.data);
-      fetchCourses();
+
+      Alert.alert(
+        "Enrollment Successful!",
+        `You have successfully enrolled in "${title}".`,
+        [
+          {
+            text: "OK",
+            onPress: () => fetchCourses()
+          }
+        ]
+      );
+
     } catch (error: any) {
       console.log(error.response?.data?.message);
       if (error.response) {
@@ -129,7 +140,7 @@ const StudentHomeScreen: React.FC = () => {
             {!item.isEnrolled ? (
               <Button
                 mode="contained"
-                onPress={() => handleEnroll(item._id)}
+                onPress={() => handleEnroll(item._id, item.title)}
               >
                 Enroll
               </Button>
